@@ -19,13 +19,24 @@ module Balanced
   # create Credits to transfer funds to this Account.
   #
   class Account < Resource
-
     def initialize attributes = {}
       Balanced::Utils.stringify_keys! attributes
       unless attributes.has_key? 'uri'
         attributes['uri'] = Balanced::Marketplace.my_marketplace.send(self.class.collection_name + '_uri')
       end
       super attributes
+    end
+    
+    # Attempts to save an existing temporary kyc account
+    #   
+    # @return [MerchantAccount]
+    def self.complete_kyc params
+      new(
+        {
+          merchant_uri: params[:merchant_uri], 
+          email: params[:email] 
+        }
+      ).save
     end
 
     # Returns a new Debit that represents a flow of money from this
