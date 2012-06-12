@@ -34,7 +34,7 @@ module Balanced
       new(
         {
           merchant_uri: params[:merchant_uri], 
-          email: params[:email] 
+          email_address: params[:email] 
         }
       ).save
     end

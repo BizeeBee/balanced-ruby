@@ -13,7 +13,7 @@ describe Balanced::Account do
       Balanced::Account.complete_kyc(
         {
           merchant_uri: "temporary-kyc-merchant-uri", 
-          email: "john.doe@example.com"
+          email_address: "john.doe@example.com"
         }
       )
     end 
@@ -22,7 +22,7 @@ describe Balanced::Account do
       Balanced::Account.should_receive(:new).with(
         {
           merchant_uri: "temporary-kyc-merchant-uri", 
-          email: "john.doe@example.com"
+          email_address: "john.doe@example.com"
         }
       )
     }
