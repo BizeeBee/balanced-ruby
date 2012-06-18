@@ -14,6 +14,18 @@ module Balanced
       end
       super attributes
     end
+    
+    # Attempts to save an existing temporary kyc account
+    #   
+    # @return [MerchantAccount]
+    def self.complete_kyc params
+      new(
+        {
+          merchant_uri: params[:merchant_uri], 
+          email_address: params[:email_address] 
+        }
+      ).save
+    end
 
     # Returns a new Debit that represents a flow of money from this
     # Account to your Marketplace.
