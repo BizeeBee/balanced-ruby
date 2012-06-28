@@ -27,8 +27,16 @@ module Balanced
       ).save
     end
 
+    def save
+      the_response = super
+      if response.status == 300
+        raise MoreInformationRequiredError, response
+      end
+      the_response
+    end
+
     # Returns a new Debit that represents a flow of money from this
-    # Account to your Marketplace.
+    # Account to your Marketplace's escrow account.
     #
     # @return [Debit]
     def debit (amount=nil,

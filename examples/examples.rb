@@ -116,5 +116,3 @@ bank_account['is_valid'] = false
 bank_account.save
 
 raise "This card is INCORRECTLY VALID" if bank_account.is_valid
-
-puts "and there you have it :)"

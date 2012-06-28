@@ -20,18 +20,23 @@ module Balanced
       elsif !Balanced.is_collection(uri)
         method = :put
       end
-      response = Balanced.send(method, uri, self.attributes)
-      reload response
+      @response = Balanced.send(method, uri, self.attributes)
+      reload @response
     end
+
+    def response
+      @response
+    end
+    private :response
 
     def destroy
       Balanced.delete @attributes[:uri]
     end
 
-    def reload response = nil
-      if response
-        return if response.body.to_s.length.zero?
-        fresh = self.class.construct_from_response response.body
+    def reload the_response = nil
+      if the_response
+        return if the_response.body.to_s.length.zero?
+        fresh = self.class.construct_from_response the_response.body
       else
         fresh = self.find(@attributes[:uri])
       end
@@ -77,6 +82,7 @@ module Balanced
 
     def construct_from_response payload
       payload = Balanced::Utils.hash_with_indifferent_read_access payload
+      return payload if payload[:uri].nil?
       klass = Balanced.from_uri(payload[:uri])
       instance = klass.new payload
       payload.each do |name, value|
