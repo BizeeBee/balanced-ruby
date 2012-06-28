@@ -27,6 +27,12 @@ module Balanced
       ).save
     end
 
+    def self.find_by_email email
+      response = Balanced.get Balanced::Marketplace.my_marketplace.accounts_uri, {email_address: email}
+      record = response.body["items"].first
+      construct_from_response(record) unless record.nil?
+    end
+
     def save
       the_response = super
       if response.status == 300
