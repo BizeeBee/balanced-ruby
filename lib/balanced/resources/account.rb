@@ -38,6 +38,15 @@ module Balanced
       construct_from_response(record) unless record.nil?
     end
 
+    # Attempts to find an existing buyer account by email
+    #
+    # @param [String] email An email of a buyer account
+    # @return [Account] if buyer is found
+    # @return [nil] if buyer is not found
+    def self.find_by_email email
+      self.find(:first, :email_address => email)
+    end
+
     def save
       the_response = super
       if response.status == 300
