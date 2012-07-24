@@ -1,3 +1,3 @@
 module Balanced
-  VERSION = '0.3.5.1'
+  VERSION = '0.3.9.1'
 end
