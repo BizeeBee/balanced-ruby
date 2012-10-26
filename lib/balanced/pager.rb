@@ -3,6 +3,7 @@ require "cgi"
 module Balanced
   class Pager
     DEFAULT_SEP = /[&;] */n
+    DEFAULT_LIMIT = 10
 
     include Enumerable
 
@@ -34,15 +35,27 @@ module Balanced
       load! unless @page
       @page[:limit]
     end
+    alias limit_value limit
 
     def offset
       load! unless @page
       @page[:offset]
     end
+    alias offset_value offset
 
     def items
       load! unless @page
       @page[:items]
+    end
+
+    def current_page
+      (offset / limit) + 1
+    end
+
+    def num_pages
+      num = total / limit
+      num += 1 if total % limit > 0
+      num
     end
 
     # @return [Array] Iterates through the current page of records.
@@ -133,6 +146,7 @@ module Balanced
       parsed_uri = URI.parse(uri)
 
       params ||= {}
+      params = adjust_pagination_params(params)
 
       unless parsed_uri.query.nil?
         # The reason we don't use CGI::parse here is because
@@ -149,6 +163,15 @@ module Balanced
       response = Balanced.get parsed_uri.to_s, params
       @page = Balanced::Utils.hash_with_indifferent_read_access response.body
       @uri = @page[:uri]
+    end
+
+    def adjust_pagination_params(original)
+      adjusted = original.dup
+      per = adjusted.delete(:per)
+      adjusted[:limit] = per unless per.nil?
+      page = adjusted.delete(:page)
+      adjusted[:offset] = (adjusted[:limit] || DEFAULT_LIMIT) * ([page, 1].max - 1) unless page.nil?
+      adjusted
     end
 
     # Stolen from Mongrel, with some small modifications:

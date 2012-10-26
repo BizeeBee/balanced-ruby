@@ -14,6 +14,9 @@ module Balanced
       :port => 5000,
       :version => '1',
       :logging_level => 'WARN',
+      :connection_timeout => 2,
+      :read_timeout => 5,
+      :logger => nil
     }
 
     attr_reader :conn
@@ -26,13 +29,23 @@ module Balanced
     end
 
     def build_conn
-      logger = Logger.new(STDOUT)
-      logger.level = Logger.const_get(DEFAULTS[:logging_level].to_s)
+      if config[:logger]
+        logger = config[:logger]
+      else
+        logger = Logger.new(STDOUT)
+        logger.level = Logger.const_get(config[:logging_level].to_s)
+      end
 
       Faraday.register_middleware :response,
           :handle_balanced_errors => lambda {Faraday::Response::RaiseBalancedError}
 
-      @conn = Faraday.new url do |cxn|
+      options = {
+        :request => {
+          :open_timeout => config[:connection_timeout],
+          :timeout => config[:read_timeout]
+        }
+      }
+      @conn = Faraday.new(url, options) do |cxn|
         cxn.request  :json
 
         cxn.response :logger, logger
@@ -53,17 +66,27 @@ module Balanced
       URI::HTTPS.build :host => config[:host], :port => config[:port]
     end
 
-    private
-
     def method_missing(method, *args, &block)
-      case method
-      when :get, :post, :put, :delete
+      if is_http_method? method
         conn.basic_auth(api_key, '') unless api_key.nil?
         conn.send method, *args
       else
-        super
+        super method, *args, &block
       end
     end
 
+    private
+    
+    def is_http_method? method
+      [:get, :post, :put, :delete].include? method
+    end
+    
+    def respond_to?(method, include_private = false)
+      if is_http_method? method
+        true
+      else
+        super method, include_private
+      end
+    end
   end
 end
